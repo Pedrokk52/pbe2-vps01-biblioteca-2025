@@ -1,0 +1,48 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // Substitua pelo seu banco de dados, pode ser 'mysql', 'sqlite', etc.
+  url      = env("DATABASE_URL") // Sua URL de conexão com o banco de dados.
+}
+
+
+model Aluno {
+  id          Int          @id @default(autoincrement())
+  nome        String
+  email       String       @unique
+  data_nascimento DateTime
+  emprestimos Emprestimo[] // Relacionamento 1:N com Emprestimo.
+}
+
+
+model Livro {
+  id          Int          @id @default(autoincrement())
+  titulo      String
+  autor       String
+  isbn        String       @unique
+  emprestimos Emprestimo[] // Relacionamento 1:N com Emprestimo.
+}
+
+
+model Emprestimo {
+  id             Int      @id @default(autoincrement())
+  data_retirada  DateTime @default(now()) // Data da retirada do livro.
+  data_devolucao DateTime? // Data da devolução do livro, pode ser nula até a devolução.
+
+  alunoId        Int
+  aluno          Aluno    @relation(fields: [alunoId], references: [id]) // Relacionamento com Aluno.
+  
+  livroId        Int
+  livro          Livro    @relation(fields: [livroId], references: [id]) // Relacionamento com Livro.
+
+  // Cálculo da multa
+  multa          Float?   @default(0) // Valor da multa, se houver.
+  
+  @@index([alunoId, livroId]) // Index para associar mais rapidamente aluno e livro.
+}
+
+
+
